@@ -1,86 +1,57 @@
 #include <Arduino.h>
+#include <elapsedMillis.h>
+#include <M5Stack.h>
 
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
-#include "BLE2902.h"
+#include <Button2.h>
 
-#define heartRateService BLEUUID((uint16_t)0x180D)
-BLECharacteristic heartRateMeasurementCharacteristics(BLEUUID((uint16_t)0x2A37), BLECharacteristic::PROPERTY_NOTIFY);
-BLECharacteristic sensorPositionCharacteristic(BLEUUID((uint16_t)0x2A38), BLECharacteristic::PROPERTY_READ);
-BLEDescriptor heartRateDescriptor(BLEUUID((uint16_t)0x2901));
-BLEDescriptor sensorPositionDescriptor(BLEUUID((uint16_t)0x2901));
+#define HZ1_TOP 128
+#define HZ2_TOP 140
+#define HZ3_TOP 149
+#define HZ4_TOP 159
 
-byte flags = 0b00111110;
-byte bpm;
-byte heart[8] = {0b00001110, 60, 0, 0, 0, 0, 0, 0};
-byte hrmPos[1] = {2};
-
-bool _BLEClientConnected = false;
-
-class MyServerCallbacks : public BLEServerCallbacks
+struct HeartRateRange
 {
-	void onConnect(BLEServer *pServer)
-	{
-		Serial.println("Something has connected: onConnect");
-		_BLEClientConnected = true;
-	};
+	uint8_t zone = 0;
+	uint8_t bottom = 126;
+	uint8_t top = 161;
+} heartRateRange;
 
-	void onDisconnect(BLEServer *pServer)
-	{
-		Serial.println("Something has disconnected: onDisconnect");
-		_BLEClientConnected = false;
-	}
-};
-
-void initBLEServer()
-{
-	BLEDevice::init("HRM-BLE-Mock");
-	// Create the BLE Server
-	BLEServer *pServer = BLEDevice::createServer();
-	pServer->setCallbacks(new MyServerCallbacks());
-
-	// Create the BLE Service
-	BLEService *pHeart = pServer->createService(heartRateService);
-
-	pHeart->addCharacteristic(&heartRateMeasurementCharacteristics);
-	heartRateDescriptor.setValue("Rate from 0 to 200");
-	heartRateMeasurementCharacteristics.addDescriptor(&heartRateDescriptor);
-	heartRateMeasurementCharacteristics.addDescriptor(new BLE2902());
-
-	pHeart->addCharacteristic(&sensorPositionCharacteristic);
-	sensorPositionDescriptor.setValue("Position 0 - 6");
-	sensorPositionCharacteristic.addDescriptor(&sensorPositionDescriptor);
-
-	pServer->getAdvertising()->addServiceUUID(heartRateService);
-
-	pHeart->start();
-	// Start advertising
-	pServer->getAdvertising()->start();
-}
+#include "Buttons.h"
+#include "Bluetooth.h"
 
 void setup()
 {
 	Serial.begin(115200);
 
-	initBLEServer();
+	M5.begin();
+	M5.Power.begin();						// Init Power module
+	M5.Power.setWakeupButton(BUTTON_A_PIN); // Set
 
-	bpm = 1;
+	Buttons::initialise();
+
+	Bluetooth::initBLEServer();
+
+	Bluetooth::bpm = 110;
+
+	Bluetooth::direction = Bluetooth::UP;
 }
+
+elapsedMillis sinceSentBLE = 0;
 
 void loop()
 {
-	heart[1] = (byte)bpm;
-	int energyUsed = 3000;
-	heart[3] = energyUsed / 256;
-	heart[2] = energyUsed - (heart[2] * 256);
-	Serial.println(bpm);
+	M5.update();
 
-	heartRateMeasurementCharacteristics.setValue(heart, 8);
-	heartRateMeasurementCharacteristics.notify();
+	Buttons::buttonA.loop();
+	Buttons::buttonB.loop();
+	Buttons::buttonC.loop();
 
-	sensorPositionCharacteristic.setValue(hrmPos, 1);
-	bpm++;
+	if (sinceSentBLE > 1000)
+	{
+		sinceSentBLE = 0;
 
-	delay(2000);
+		Bluetooth::sendHr();
+	}
+
+	delay(10);
 }
