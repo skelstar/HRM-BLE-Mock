@@ -4,6 +4,8 @@
 
 #include <Button2.h>
 
+#include "Lcd.h"
+
 #define HZ1_TOP 128
 #define HZ2_TOP 140
 #define HZ3_TOP 149
@@ -26,6 +28,8 @@ void setup()
 	M5.begin();
 	M5.Power.begin();						// Init Power module
 	M5.Power.setWakeupButton(BUTTON_A_PIN); // Set
+
+	Display::initialise();
 
 	Buttons::initialise();
 

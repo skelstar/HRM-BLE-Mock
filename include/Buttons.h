@@ -1,6 +1,7 @@
 #pragma once
 #include <Button2.h>
 #include <M5Stack.h>
+#include "Lcd.h"
 
 namespace Buttons
 {
@@ -60,11 +61,15 @@ namespace Buttons
             heartRateRange.zone = zone;
             heartRateRange.bottom = HZ1_TOP - 3;
             heartRateRange.top = HZ2_TOP + 3;
+            Display::updateMainMessage("Zone 2");
+            Display::updateMiddleButton("Zone 3");
             break;
         case 3:
             heartRateRange.zone = zone;
             heartRateRange.bottom = HZ2_TOP - 3;
             heartRateRange.top = HZ3_TOP + 3;
+            Display::updateMainMessage("Zone 3");
+            Display::updateMiddleButton("Zone 2");
             break;
         }
 
