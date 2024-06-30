@@ -30,7 +30,7 @@ namespace Display
         updateMainMessage("ALL Zones");
 
         // drawButtonLabel(1, "");
-        drawButtonLabel(ButtonNumber::MIDDLE_BUTTON, "ALL");
+        drawButtonLabel(ButtonNumber::MIDDLE_BUTTON, "Zone 2");
         drawButtonLabel(ButtonNumber::RIGHT_BUTTON, "X");
     }
 

@@ -10,6 +10,9 @@
 
 namespace Bluetooth
 {
+    // prototypes
+    byte calculateNextBpm(byte hr);
+
     BLECharacteristic heartRateMeasurementCharacteristics(BLEUUID((uint16_t)0x2A37), BLECharacteristic::PROPERTY_NOTIFY);
     BLECharacteristic sensorPositionCharacteristic(BLEUUID((uint16_t)0x2A38), BLECharacteristic::PROPERTY_READ);
     BLEDescriptor heartRateDescriptor(BLEUUID((uint16_t)0x2901));
@@ -69,6 +72,20 @@ namespace Bluetooth
         pServer->getAdvertising()->start();
     }
 
+    void correctForHeartRateRange()
+    {
+        if (bpm < heartRateRange.bottom)
+        {
+            bpm = heartRateRange.bottom;
+            direction = UP;
+        }
+        else if (bpm > heartRateRange.top)
+        {
+            bpm = heartRateRange.top;
+            direction = DOWN;
+        }
+    }
+
     void sendHr()
     {
         heart[1] = (byte)bpm;
@@ -77,28 +94,35 @@ namespace Bluetooth
         heart[2] = energyUsed - (heart[2] * 256);
         Serial.println(bpm);
 
-        Bluetooth::heartRateMeasurementCharacteristics.setValue(heart, 8);
-        Bluetooth::heartRateMeasurementCharacteristics.notify();
+        correctForHeartRateRange();
 
-        Bluetooth::sensorPositionCharacteristic.setValue(hrmPos, 1);
+        heartRateMeasurementCharacteristics.setValue(heart, 8);
+        heartRateMeasurementCharacteristics.notify();
+        sensorPositionCharacteristic.setValue(hrmPos, 1);
 
+        bpm = calculateNextBpm(bpm);
+    }
+
+    byte calculateNextBpm(byte hr)
+    {
         if (direction == UP)
         {
-            if (bpm > heartRateRange.top)
+            if (hr > heartRateRange.top)
             {
-                bpm = heartRateRange.top - 1;
+                hr = heartRateRange.top - 1;
                 direction = DOWN;
             }
-            bpm++;
+            hr++;
         }
         else if (direction == DOWN)
         {
-            if (bpm < heartRateRange.bottom)
+            if (hr < heartRateRange.bottom)
             {
-                bpm = heartRateRange.bottom + 1;
+                hr = heartRateRange.bottom + 1;
                 direction = UP;
             }
-            bpm--;
+            hr--;
         }
+        return hr;
     }
 }

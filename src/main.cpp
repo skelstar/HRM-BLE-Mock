@@ -7,7 +7,7 @@
 #include "Lcd.h"
 
 #define HZ1_TOP 128
-#define HZ2_TOP 140
+#define HZ2_TOP 141
 #define HZ3_TOP 149
 #define HZ4_TOP 159
 

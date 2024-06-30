@@ -53,23 +53,26 @@ namespace Buttons
         buttonC.setPressedHandler(buttonCPressed_cb);
     }
 
+    const uint8_t BeatsAboveTopOfZone = 10;
+    const uint8_t BeatsBelowTopOfZone = 5;
+
     void setZone(uint8_t zone)
     {
         switch (zone)
         {
         case 2:
             heartRateRange.zone = zone;
-            heartRateRange.bottom = HZ1_TOP - 3;
-            heartRateRange.top = HZ2_TOP + 3;
-            Display::updateMainMessage("Zone 2");
-            Display::updateMiddleButton("Zone 3");
+            heartRateRange.bottom = HZ2_TOP - BeatsBelowTopOfZone;
+            heartRateRange.top = HZ2_TOP + BeatsAboveTopOfZone;
+            Display::updateMainMessage(">Zone 2");
+            Display::updateMiddleButton(">HZ3");
             break;
         case 3:
             heartRateRange.zone = zone;
-            heartRateRange.bottom = HZ2_TOP - 3;
-            heartRateRange.top = HZ3_TOP + 3;
-            Display::updateMainMessage("Zone 3");
-            Display::updateMiddleButton("Zone 2");
+            heartRateRange.bottom = HZ3_TOP - BeatsBelowTopOfZone;
+            heartRateRange.top = HZ3_TOP + BeatsAboveTopOfZone;
+            Display::updateMainMessage(">Zone 3");
+            Display::updateMiddleButton(">HZ2");
             break;
         }
 
