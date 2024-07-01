@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include <M5Stack.h>
 
+#include "Bluetooth.h"
+
 namespace Display
 {
 #define LCD_WIDTH 340
@@ -21,6 +23,7 @@ namespace Display
     // prototypes
     void updateMainMessage(const char *message);
     void drawButtonLabel(ButtonNumber button, const char *label);
+    void drawHeartRate(byte heartrate);
     // uint8_t messageLength(const char *message);
 
     void initialise()
@@ -28,6 +31,7 @@ namespace Display
         M5.Lcd.begin();
         M5.Lcd.fillScreen(RED);
         updateMainMessage("ALL Zones");
+        drawHeartRate(Bluetooth::bpm);
 
         // drawButtonLabel(1, "");
         drawButtonLabel(ButtonNumber::MIDDLE_BUTTON, "Zone 2");
@@ -45,7 +49,20 @@ namespace Display
         M5.Lcd.setTextSize(TEXT_SIZE_M);
         M5.Lcd.setTextDatum(CC_DATUM);
         M5.Lcd.setTextColor(WHITE);
-        M5.Lcd.drawString(message, LCD_WIDTH / 2, LCD_HEIGHT / 2, FONT_NUM);
+        M5.Lcd.drawString(message, LCD_WIDTH / 2, (LCD_HEIGHT / 2) - 30, FONT_NUM);
+    }
+
+    void drawHeartRate(byte heartrate)
+    {
+        M5.Lcd.fillRect(0, (LCD_HEIGHT / 2), LCD_WIDTH, 30, BLACK);
+
+        char buffer[7];
+        uint8_t length = sprintf(buffer, "HR %d", heartrate);
+        // printf("drawHeartRate: %s \n", buffer);
+        M5.Lcd.setTextSize(TEXT_SIZE_LABEL);
+        M5.Lcd.setTextDatum(CC_DATUM);
+        M5.Lcd.setTextColor(WHITE);
+        M5.Lcd.drawString(buffer, LCD_WIDTH / 2, (LCD_HEIGHT / 2) + 15, FONT_NUM);
     }
 
     void drawButtonLabel(ButtonNumber button, const char *label)

@@ -6,6 +6,8 @@
 #include <BLEServer.h>
 #include "BLE2902.h"
 
+#include "Lcd.h"
+
 #define heartRateService BLEUUID((uint16_t)0x180D)
 
 namespace Bluetooth
@@ -19,7 +21,7 @@ namespace Bluetooth
     BLEDescriptor sensorPositionDescriptor(BLEUUID((uint16_t)0x2901));
 
     byte flags = 0b00111110;
-    byte bpm;
+    byte bpm, lastBpm;
     byte heart[8] = {0b00001110, 60, 0, 0, 0, 0, 0, 0};
     byte hrmPos[1] = {2};
 
@@ -95,6 +97,7 @@ namespace Bluetooth
         Serial.println(bpm);
 
         correctForHeartRateRange();
+        lastBpm = bpm;
 
         heartRateMeasurementCharacteristics.setValue(heart, 8);
         heartRateMeasurementCharacteristics.notify();

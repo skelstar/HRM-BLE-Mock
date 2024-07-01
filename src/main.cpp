@@ -4,8 +4,6 @@
 
 #include <Button2.h>
 
-#include "Lcd.h"
-
 #define HZ1_TOP 128
 #define HZ2_TOP 141
 #define HZ3_TOP 149
@@ -18,6 +16,7 @@ struct HeartRateRange
 	uint8_t top = 161;
 } heartRateRange;
 
+#include "Lcd.h"
 #include "Buttons.h"
 #include "Bluetooth.h"
 
@@ -35,7 +34,7 @@ void setup()
 
 	Bluetooth::initBLEServer();
 
-	Bluetooth::bpm = 110;
+	Bluetooth::bpm = 120;
 
 	Bluetooth::direction = Bluetooth::UP;
 }
@@ -55,6 +54,10 @@ void loop()
 		sinceSentBLE = 0;
 
 		Bluetooth::sendHr();
+
+		// Display::updateMainMessage();
+		Display::drawHeartRate(Bluetooth::lastBpm);
+		// Display::updateMiddleButton();
 	}
 
 	delay(10);
